@@ -1,0 +1,83 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_call:
+permissions:
+  contents: read
+jobs:
+  checks:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2022]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Linux native dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libxcb-shape0-dev libxcb-xfixes0-dev libxkbcommon-dev libwayland-dev pkg-config
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: rust-${{ runner.os }}-1.94.0-checks-${{ hashFiles('Cargo.lock') }}
+      - name: Install pinned Rust
+        run: rustup toolchain install 1.94.0 --profile minimal --component clippy --component rustfmt
+      - name: Publication tooling tests
+        run: python scripts/test_check_publication.py
+      - name: Validate source publication inputs
+        run: python scripts/check-publication.py
+      - name: Formatting
+        run: cargo fmt --check
+      - name: Core tests
+        run: cargo test --locked --no-default-features
+      - name: Default tests
+        run: cargo test --locked
+      - name: Native component tests
+        run: cargo test --locked --features gui-test
+      - name: Clippy
+        run: cargo clippy --locked --all-targets --features gui-test -- -D warnings
+      - name: Packaging self-tests
+        shell: pwsh
+        run: |
+          ./scripts/test-package-windows.ps1 -SelfTest
+          ./scripts/test-package-version-change.ps1
+          ./scripts/test-windows-imports.ps1
+  windows-package:
+    runs-on: windows-2022
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - run: rustup toolchain install 1.94.0 --profile minimal
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: rust-Windows-1.94.0-static-package-${{ hashFiles('Cargo.lock') }}
+      - name: Build Windows x64 with static CRT
+        env:
+          RUSTFLAGS: -C target-feature=+crt-static
+        run: cargo build --locked --release --target x86_64-pc-windows-msvc --bin pikker
+      - name: Verify imports and package
+        shell: pwsh
+        run: |
+          ./scripts/check-windows-imports.ps1 -Exe target/x86_64-pc-windows-msvc/release/pikker.exe
+          $version = (cargo metadata --locked --no-deps --format-version 1 | ConvertFrom-Json).packages[0].version
+          ./scripts/package-windows.ps1 -Exe target/x86_64-pc-windows-msvc/release/pikker.exe -Version $version
+          ./scripts/test-package-windows.ps1 -Archive dist/pikker-windows-x64.zip
+          ./scripts/smoke-windows.ps1 -Archive dist/pikker-windows-x64.zip
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: windows-x64-package
+          path: |
+            dist/pikker-windows-x64.zip
+            dist/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 7
