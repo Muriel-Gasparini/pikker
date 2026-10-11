@@ -7,16 +7,19 @@ function Get-ImportedLibraries([string]$Dump) {
 }
 function Assert-SystemImports([string[]]$Libraries) {
     if (!$Libraries -or $Libraries.Count -eq 0) { throw 'No DLL dependencies detected' }
-    $system = @('advapi32.dll','bcrypt.dll','bcryptprimitives.dll','comctl32.dll','comdlg32.dll','crypt32.dll',
+    $system = @('advapi32.dll','bcrypt.dll','bcryptprimitives.dll','combase.dll','comctl32.dll','comdlg32.dll','crypt32.dll',
         'd3d11.dll','dbghelp.dll','dwmapi.dll','dwrite.dll','dxgi.dll','gdi32.dll','imm32.dll','iphlpapi.dll',
         'kernel32.dll','kernelbase.dll','msvcrt.dll','ntdll.dll','ole32.dll','oleaut32.dll',
         'opengl32.dll','propsys.dll','rpcrt4.dll','secur32.dll','setupapi.dll','shell32.dll',
         'shlwapi.dll','ucrtbase.dll','user32.dll','userenv.dll','version.dll','winmm.dll','ws2_32.dll')
-    foreach ($library in $Libraries) {
+    $review = @(foreach ($library in $Libraries) {
         $name = $library.ToLowerInvariant()
         if ($name -notmatch '^api-ms-win-[a-z0-9-]+\.dll$' -and $name -notmatch '^ext-ms-win-[a-z0-9-]+\.dll$' -and $name -notin $system) {
-            throw ('Non-system DLL requires explicit packaging/license review: ' + $library)
+            $library
         }
+    })
+    if ($review.Count -gt 0) {
+        throw ('Non-system DLLs require explicit packaging/license review: ' + ($review -join ', '))
     }
 }
 if ($Exe) {
@@ -31,6 +34,6 @@ if ($Exe) {
     $dependencies = & $dumpbin /DEPENDENTS $Exe
     if ($LASTEXITCODE -ne 0) { throw 'Cannot inspect executable imports' }
     $libraries = @(Get-ImportedLibraries ($dependencies -join "`n"))
-    Assert-SystemImports $libraries
     $libraries
+    Assert-SystemImports $libraries
 }
