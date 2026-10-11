@@ -11,7 +11,7 @@ embedded browser, background service or automatic picks.
 Windows x64 packages are published through [GitHub Releases](https://github.com/Muriel-Gasparini/pikker/releases).
 Download `pikker-windows-x64.zip` and `SHA256SUMS.txt`, verify the ZIP's SHA-256,
 extract the entire archive and open `pikker.exe`. No Rust, Python or Node installation is needed.
-The release pipeline is being prepared; source availability is not a completed Windows release.
+The initial Windows beta is available in [v0.1.0-beta.1](https://github.com/Muriel-Gasparini/pikker/releases/tag/v0.1.0-beta.1).
 
 The executable is initially unsigned. Windows reputation warnings may appear;
 verify the source and checksum rather than disabling security protections.
