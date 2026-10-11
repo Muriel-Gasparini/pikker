@@ -55,7 +55,7 @@ Player names, PUUIDs, chat and raw ranked captures are not persisted or shipped.
 ## Development
 
 Install Rust 1.94.0. Linux needs X11/Wayland development dependencies (Ubuntu:
-`libxcb-shape0-dev`, `libxcb-xfixes0-dev`, `libxkbcommon-dev`, `libwayland-dev`, `pkg-config`).
+`libxcb-shape0-dev`, `libxcb-xfixes0-dev`, `libxkbcommon-dev`, `libwayland-dev`, `libfontconfig-dev`, `pkg-config`).
 Windows uses MSVC with Visual Studio Build Tools and the Windows SDK.
 
 ```sh

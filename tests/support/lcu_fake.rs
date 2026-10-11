@@ -15,6 +15,12 @@ use std::{
 type Routes = Arc<Mutex<BTreeMap<String, (u16, Vec<u8>)>>>;
 type ResponseGate = (mpsc::Sender<()>, Arc<Mutex<mpsc::Receiver<()>>>);
 type ResponseGates = Arc<Mutex<BTreeMap<String, ResponseGate>>>;
+fn configure_accepted_socket(tcp: &TcpStream) -> std::io::Result<()> {
+    // Winsock accept inherits the listener's nonblocking mode.
+    tcp.set_nonblocking(false)?;
+    tcp.set_read_timeout(Some(Duration::from_secs(3)))?;
+    tcp.set_write_timeout(Some(Duration::from_secs(3)))
+}
 pub struct Fake {
     pub port: u16,
     pub certificate: Vec<u8>,
@@ -100,8 +106,7 @@ impl Fake {
             while !halt.load(Ordering::SeqCst) {
                 match listener.accept() {
                     Ok((tcp, _)) => {
-                        tcp.set_read_timeout(Some(Duration::from_secs(3))).unwrap();
-                        tcp.set_write_timeout(Some(Duration::from_secs(3))).unwrap();
+                        configure_accepted_socket(&tcp).unwrap();
                         streams.lock().unwrap().push(tcp.try_clone().unwrap());
                         let (config, table, record, clients, halt) = (
                             config.clone(),
@@ -192,6 +197,7 @@ impl Fake {
         }
     }
 }
+
 impl Drop for Fake {
     fn drop(&mut self) {
         self.stop.store(true, Ordering::SeqCst);
@@ -201,5 +207,28 @@ impl Drop for Fake {
         if let Some(worker) = self.worker.take() {
             worker.join().unwrap();
         }
+    }
+}
+
+#[cfg(test)]
+mod socket_tests {
+    use super::*;
+    #[test]
+    fn accepted_socket_waits_for_input_even_when_nonblocking_mode_is_inherited() {
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let mut client = TcpStream::connect(listener.local_addr().unwrap()).unwrap();
+        let (mut server, _) = listener.accept().unwrap();
+        // Windows accept inherits this flag; make the condition portable.
+        server.set_nonblocking(true).unwrap();
+        configure_accepted_socket(&server).unwrap();
+        let sender = thread::spawn(move || {
+            thread::sleep(Duration::from_millis(50));
+            let _ = client.write_all(b"x");
+        });
+        let mut byte = [0];
+        let result = server.read_exact(&mut byte);
+        sender.join().unwrap();
+        assert!(result.is_ok(), "accepted stream did not wait: {result:?}");
+        assert_eq!(byte, *b"x");
     }
 }
