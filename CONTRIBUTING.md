@@ -17,7 +17,10 @@ Discuss new dependencies, telemetry, automatic game actions or resident services
 Build with `cargo build --release --locked --target x86_64-pc-windows-msvc --bin pikker`.
 The workflows under `.github/workflows` define packaging/smoke-test commands.
 Tags match Cargo's version; beta tags are prereleases, not stable-validation claims.
-Publishing requires platform checks and resolved distribution-policy requirements.
+Publishing requires successful platform checks and explicit maintainer opt-in.
+Set the repository variable `PUBLISH_BINARIES=true` to enable binary artifacts and tagged releases.
+This flag records a maintainer decision, not Riot approval or legal clearance. Maintainers remain
+responsible for provider policies, registration and data-use conditions; personal/open-source use does not establish an exemption.
 
 ## License notices
 

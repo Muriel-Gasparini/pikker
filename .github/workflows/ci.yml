@@ -74,6 +74,7 @@ jobs:
           ./scripts/test-package-windows.ps1 -Archive dist/pikker-windows-x64.zip
           ./scripts/smoke-windows.ps1 -Archive dist/pikker-windows-x64.zip
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: vars.PUBLISH_BINARIES == 'true'
         with:
           name: windows-x64-package
           path: |

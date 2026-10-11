@@ -40,8 +40,9 @@ LCU is unsupported and can change without a major version bump. The pinned contr
 do not prove compatibility with the latest ranked session. A real Windows/LoL session has not been validated.
 ARAM is not implemented. Linux [resource measurements](docs/performance.md) do not prove Windows performance or FPS impact.
 
-Riot product registration/audit and OP.GG data-use/cache/quotas must be resolved before treating
-public binary distribution as cleared. No official approval or unrestricted rights to game data are claimed.
+Maintainers are responsible for Riot registration/audit policies and OP.GG data-use/cache/quotas.
+Personal or open-source use does not establish an exemption. Binary publication is a maintainer
+decision, not evidence of official approval or unrestricted rights to game data.
 
 ## Privacy and configuration
 

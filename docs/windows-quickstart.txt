@@ -30,5 +30,6 @@ promessa de subir de rank. Medições Linux não comprovam FPS/recursos Windows.
 Executável não assinado. Se o Windows alertar, confira o checksum e a origem;
 não desative proteções do sistema nem execute como administrador por rotina.
 Código original MIT; avisos/licenças de terceiros acompanham o pacote.
-Pikker não é endossado pela Riot; registro/auditoria e condições dos fornecedores
-precisam ser resolvidos antes da distribuição pública de binários.
+Pikker não é endossado pela Riot. Publicar este pacote não comprova autorização
+oficial; uso pessoal/open source não estabelece isenção das políticas e termos
+dos fornecedores. Não há promessa de aprovação pela Riot Games.

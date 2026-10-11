@@ -10,13 +10,13 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
-      - name: Validate version and distribution clearance
+      - name: Validate version and maintainer opt-in
         env:
           RELEASE_TAG: ${{ github.ref_name }}
-          DISTRIBUTION_APPROVED: ${{ vars.DISTRIBUTION_APPROVED }}
+          PUBLISH_BINARIES: ${{ vars.PUBLISH_BINARIES }}
         run: |
           python scripts/check-publication.py --tag "$RELEASE_TAG"
-          test "$DISTRIBUTION_APPROVED" = true || { echo 'Distribution-policy clearance is required before publishing binaries.' >&2; exit 1; }
+          test "$PUBLISH_BINARIES" = true || { echo 'Maintainer opt-in is required before publishing binaries.' >&2; exit 1; }
   verify:
     needs: validate-tag
     uses: ./.github/workflows/ci.yml
