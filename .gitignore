@@ -1,0 +1,11 @@
+/target
+/dist
+/.superpowers
+*.tmp
+/profile.json
+/settings.json
+/meta.json
+/lockfile
+/.env
+/.env.*
+__pycache__/

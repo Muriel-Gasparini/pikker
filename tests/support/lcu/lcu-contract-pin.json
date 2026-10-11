@@ -1,0 +1,26 @@
+{
+  "source": "https://raw.githubusercontent.com/dysolix/hasagi-types/fe93ee810d5269a056a3d559b14eeef1d9b708e8/swagger.json",
+  "revision": "fe93ee810d5269a056a3d559b14eeef1d9b708e8",
+  "client_version": "16.19.820.7193",
+  "sha256": "b1e534f9e69b71c5953d9d469048c4693387670cf52eebf6a7c91a278ce1a6fb",
+  "compatibility_assumption": "Use 16.19 as the development baseline for 16.20; actual 16.20 ranked event traces have not been captured.",
+  "visibility_policy": "Allow ally championPickIntent, ignore enemy intent and pending enemy picks; no inferred enemy position or hidden player identities.",
+  "read_endpoint": "/lol-champ-select/v1/session",
+  "response_schema": "TeamBuilderDirect-ChampSelectSession",
+  "required_consumed_fields": {
+    "TeamBuilderDirect-ChampSelectSession": {
+      "myTeam": "array", "theirTeam": "array", "actions": "array",
+      "localPlayerCellId": "integer", "timer": "reference", "bans": "reference"
+    },
+    "TeamBuilderDirect-ChampSelectPlayerSelection": {
+      "cellId": "integer", "championId": "integer", "championPickIntent": "integer", "assignedPosition": "string"
+    },
+    "TeamBuilderDirect-ChampSelectAction": {
+      "actorCellId": "integer", "championId": "integer", "completed": "boolean", "type": "string"
+    },
+    "TeamBuilderDirect-ChampSelectBannedChampions": {
+      "myTeamBans": "array", "theirTeamBans": "array"
+    },
+    "TeamBuilderDirect-TeambuilderDirectTypes-ChampSelectTimer": {"phase": "string"}
+  }
+}

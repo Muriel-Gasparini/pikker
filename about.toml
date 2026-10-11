@@ -1,0 +1,7 @@
+accepted = [
+    "MIT", "Apache-2.0", "ISC", "BSD-2-Clause", "BSD-3-Clause", "0BSD",
+    "Unicode-3.0", "Zlib", "BSL-1.0", "CC0-1.0", "Unlicense",
+    "CDLA-Permissive-2.0", "LicenseRef-Slint-Royalty-free-2.0",
+]
+ignore-dev-dependencies = true
+targets = ["x86_64-pc-windows-msvc"]

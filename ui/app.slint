@@ -1,0 +1,245 @@
+import { AboutSlint, Button, ComboBox, CheckBox, SpinBox, VerticalBox, HorizontalBox, ScrollView, Palette } from "std-widgets.slint";
+
+export struct RankRow { id:int, name:string, score:string, tags:string, reasons:string, insufficient:bool }
+export struct SlotRow { title:string, detail:string }
+
+component Card inherits Rectangle {
+    background: #18222f;
+    border-radius: 12px;
+    border-width: 1px;
+    border-color: #28384b;
+}
+
+export component AppWindow inherits Window {
+    title: "Pikker";
+    preferred-width: 1180px; preferred-height: 820px;
+    min-width: 1000px; min-height: 740px;
+    background: #0e1520;
+    default-font-family: "DejaVu Sans";
+    init => { Palette.color-scheme = ColorScheme.dark; }
+    in property <[string]> champions;
+    out property <bool> about-visible: false;
+    out property <string> legal-notice: "Pikker isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.";
+    callback show-about();
+    callback close-about();
+    show-about => { root.about-visible = true; }
+    close-about => { root.about-visible = false; }
+    in property <[RankRow]> ranking;
+    in property <[SlotRow]> allies;
+    in property <[SlotRow]> enemies;
+    in property <string> status;
+    in property <string> bans;
+    in property <string> pool-summary;
+    in property <string> partner-preset-label;
+    in property <string> proficiency-detail;
+    in property <string> error;
+    in property <string> data-error;
+    in property <string> data-status: "Sem dados estatísticos";
+    in property <string> connection-status: "Cliente LoL ausente";
+    in property <string> bootstrap-stage: "Carregando dados locais";
+    in property <int> bootstrap-completed: 0;
+    in property <int> bootstrap-total: 0;
+    in property <bool> bootstrap-total-known: false;
+    in property <bool> bootstrap-busy: true;
+    in property <bool> draft-active: false;
+    in property <bool> local-role-known: false;
+    in property <string> details-status: "Selecione um candidato para ver runas e feitiços em cache.";
+    in-out property <int> source-mode-index: 1;
+    in-out property <int> rank-index: 0;
+    in-out property <int> role-index: 4;
+    in-out property <int> phase-index: 2;
+    in-out property <int> preset-index: 0;
+    in-out property <int> selected-champion: 0;
+    in-out property <int> selected-slot: 0;
+    in-out property <int> selected-team: 0;
+    in-out property <int> selected-position: 0;
+    in-out property <bool> favorite: false;
+    in-out property <int> proficiency-index: 0;
+    in-out property <bool> proficiency-edited: false;
+    in-out property <int> page: 0;
+    in-out property <int> weight-viability: 40;
+    in-out property <int> weight-proficiency: 25;
+    in-out property <int> weight-composition: 20;
+    in-out property <int> weight-blind: 10;
+    in-out property <int> weight-preference: 5;
+    callback role-changed(int);
+    callback phase-changed(int);
+    callback load-preset(int);
+    callback new-session();
+    callback edit-pick(int);
+    callback ban-champion(bool);
+    callback select-champion(int);
+    callback save-preference();
+    callback apply-weights();
+    callback select-slot(int,int);
+    callback refresh-data();
+    callback select-candidate(int);
+    callback source-mode-changed(int);
+    callback rank-changed(int);
+
+    VerticalBox {
+        padding: 24px; spacing: 14px;
+        HorizontalBox {
+            vertical-stretch:0;
+            VerticalBox {
+                spacing: 4px;
+                Text { text:"PIKKER"; color:#64e1cb; font-size:26px; font-weight:800; }
+                Text { text:"Seu próximo pick, com contexto."; color:#99abc0; font-size:13px; }
+            }
+            Rectangle { horizontal-stretch:1; background:transparent; }
+            ComboBox { width:190px; model:["Draft manual / simulador","Conexão automática"]; current-index <=> root.source-mode-index; selected(value)=>{root.source-mode-changed(self.current-index);} }
+            Button { text:"Sobre"; clicked => { root.show-about(); } }
+        }
+        Card {
+            min-height:100px;
+            vertical-stretch:0;
+            VerticalBox {
+                padding:12px; spacing:5px;
+                HorizontalBox {
+                    Text { text:root.bootstrap-stage + (root.bootstrap-total-known ? " · " + root.bootstrap-completed + " de " + root.bootstrap-total : ""); color:#64e1cb; horizontal-stretch:1; }
+                    ComboBox { width:170px; enabled:!root.draft-active && !root.bootstrap-busy; model:["Todos os elos","Ferro","Bronze","Prata","Ouro","Platina","Esmeralda","Diamante","Mestre","Grão-mestre","Desafiante"]; current-index <=> root.rank-index; selected(value)=>{root.rank-changed(self.current-index);} }
+                    Button { text:"Atualizar dados"; enabled:!root.bootstrap-busy && !root.draft-active; clicked=>{root.refresh-data();} }
+                }
+                Text { text:root.data-status; color:#99abc0; font-size:11px; wrap:word-wrap; }
+                Text { text:root.connection-status; color:#e1c477; font-size:11px; }
+                if root.bootstrap-busy && root.bootstrap-total-known && root.bootstrap-total > 0: Rectangle {
+                    height:4px; background:#28384b;
+                    Rectangle { height:parent.height; width:parent.width * root.bootstrap-completed / root.bootstrap-total; background:#64e1cb; }
+                }
+                if root.data-error != "": Text { text:root.data-error; color:#e1c477; wrap:word-wrap; font-size:11px; }
+            }
+        }
+        HorizontalBox {
+            spacing:12px;
+            vertical-stretch:0;
+            Text { text:"ROTA"; color:#99abc0; vertical-alignment:center; }
+            ComboBox { width:145px; enabled: root.source-mode-index == 0 || !root.local-role-known; model:["TOP","JUNGLE","MID","BOT","SUPPORT"]; current-index <=> root.role-index; selected(value)=>{ root.role-changed(self.current-index); } }
+            ComboBox { width:160px; enabled:root.source-mode-index==0; model:["Em espera","Bans","Picks","Finalização","Encerrado"]; current-index <=> root.phase-index; selected(value)=>{ root.phase-changed(self.current-index); } }
+            Text { text:root.status; color:#99abc0; vertical-alignment:center; horizontal-stretch:1; }
+            Button { text:"Novo draft"; enabled:root.source-mode-index==0; clicked=>{root.new-session();} }
+        }
+        HorizontalBox {
+            spacing:18px;
+            Card {
+                width:450px;
+                ScrollView {
+                    content-width:self.width;
+                VerticalBox {
+                    padding:16px; spacing:12px;
+                    HorizontalBox {
+                        vertical-stretch:0;
+                        max-height:32px;
+                        Button { text:"Draft"; clicked=>{root.page=0;} }
+                        Button { text:"Preferências"; clicked=>{root.page=1;} }
+                        Button { text:"Pesos"; clicked=>{root.page=2;} }
+                        Button { text:"Detalhes"; clicked=>{root.page=3;} }
+                    }
+                    if root.page == 0: VerticalBox {
+                        spacing:10px;
+                        HorizontalBox {
+                            ComboBox { horizontal-stretch:1; model:["First pick",root.partner-preset-label,"Composição parcial","Adversários conhecidos"]; current-index <=> root.preset-index; }
+                            Button { text:"Carregar"; enabled:root.source-mode-index==0; clicked=>{root.load-preset(root.preset-index);} }
+                        }
+                        Text { text:"Selecione um slot para editar"; color:#99abc0; font-size:12px; }
+                        HorizontalBox {
+                            spacing:10px;
+                            VerticalBox {
+                                Text { text:"ALIADOS"; color:#64e1cb; font-size:12px; }
+                                for slot[i] in root.allies: Button { text:slot.title + "\n" + slot.detail; clicked=>{root.select-slot(0,i);} }
+                            }
+                            VerticalBox {
+                                Text { text:"ADVERSÁRIOS"; color:#f09b9b; font-size:12px; }
+                                for slot[i] in root.enemies: Button { text:slot.title + "\n" + slot.detail; clicked=>{root.select-slot(1,i);} }
+                            }
+                        }
+                        Text { text:(root.selected-team==0 ? "Aliado " : "Adversário ") + (root.selected-slot+1); color:#edf4fc; }
+                        ComboBox { model:root.champions; current-index <=> root.selected-champion; selected(value)=>{root.select-champion(self.current-index);} }
+                        ComboBox { model:["Posição desconhecida","TOP","JUNGLE","MID","BOT","SUPPORT"]; current-index <=> root.selected-position; }
+                        HorizontalBox {
+                            Button { text:"Hover"; enabled:root.source-mode-index==0; clicked=>{root.edit-pick(0);} }
+                            Button { text:"Confirmar"; enabled:root.source-mode-index==0; clicked=>{root.edit-pick(1);} }
+                            Button { text:"Limpar slot"; enabled:root.source-mode-index==0; clicked=>{root.edit-pick(2);} }
+                        }
+                        HorizontalBox {
+                            Button { text:"Banir"; enabled:root.source-mode-index==0; clicked=>{root.ban-champion(true);} }
+                            Button { text:"Remover ban"; enabled:root.source-mode-index==0; clicked=>{root.ban-champion(false);} }
+                        }
+                        Text { text:"BANS · " + root.bans; color:#e1c477; wrap:word-wrap; font-size:12px; }
+                    }
+                    if root.page == 1: VerticalBox {
+                        spacing:14px;
+                        Text { text:"Gostar ≠ dominar"; color:#edf4fc; font-size:19px; font-weight:600; }
+                        Text { text:"Preferências são por rota e não limitam os candidatos. O sistema também indica campeões fora da sua pool."; color:#99abc0; wrap:word-wrap; }
+                        ComboBox { model:root.champions; current-index <=> root.selected-champion; selected(value)=>{root.select-champion(self.current-index);} }
+                        CheckBox { text:"Favorito nesta rota"; checked <=> root.favorite; }
+                        Text { text:root.proficiency-detail; color:#99abc0; }
+                        ComboBox { model:["Desconhecido","Sem experiência","Iniciante","Básico","Intermediário","Avançado","Muito experiente"]; current-index <=> root.proficiency-index; selected(value)=>{root.proficiency-edited=true;} }
+                        Button { text:"Salvar preferência"; clicked=>{root.save-preference();} }
+                        Text { text:root.pool-summary; color:#64e1cb; wrap:word-wrap; }
+                        Rectangle { vertical-stretch:1; background:transparent; }
+                    }
+                    if root.page == 2: VerticalBox {
+                        spacing:12px;
+                        Text { text:"Ajuste do ranking"; color:#edf4fc; font-size:19px; }
+                        Text { text:"Os pesos devem somar 100%. Os escores são heurísticos e não representam chance de vitória."; color:#99abc0; wrap:word-wrap; }
+                        HorizontalBox { Text { text:"Viabilidade"; color:#edf4fc; horizontal-stretch:1; } SpinBox { minimum:0; maximum:100; value <=> root.weight-viability; } }
+                        HorizontalBox { Text { text:"Domínio / execução"; color:#edf4fc; horizontal-stretch:1; } SpinBox { minimum:0; maximum:100; value <=> root.weight-proficiency; } }
+                        HorizontalBox { Text { text:"Composição"; color:#edf4fc; horizontal-stretch:1; } SpinBox { minimum:0; maximum:100; value <=> root.weight-composition; } }
+                        HorizontalBox { Text { text:"Blind pick"; color:#edf4fc; horizontal-stretch:1; } SpinBox { minimum:0; maximum:100; value <=> root.weight-blind; } }
+                        HorizontalBox { Text { text:"Preferência"; color:#edf4fc; horizontal-stretch:1; } SpinBox { minimum:0; maximum:100; value <=> root.weight-preference; } }
+                        Button { text:"Aplicar pesos"; clicked=>{root.apply-weights();} }
+                        Rectangle { vertical-stretch:1; background:transparent; }
+                    }
+                    if root.page == 3: VerticalBox {
+                        spacing:12px;
+                        Text { text:"Runas e feitiços"; color:#edf4fc; font-size:19px; }
+                        ComboBox { model:root.champions; current-index <=> root.selected-champion; selected(value)=>{root.select-champion(self.current-index);} }
+                        Text { text:root.details-status; color:#99abc0; wrap:word-wrap; font-size:13px; }
+                        Text { text:"Sugestões em cache. Nenhuma configuração é aplicada ao cliente automaticamente."; color:#e1c477; wrap:word-wrap; font-size:11px; }
+                    }
+                }
+                }
+            }
+            VerticalBox {
+                spacing:12px;
+                HorizontalBox {
+                    Text { text:"Recomendações"; color:#edf4fc; font-size:21px; font-weight:600; }
+                    Text { text:root.ranking.length + " opções"; color:#99abc0; horizontal-alignment:right; }
+                }
+                if root.ranking.length == 0: Text { text:"Aguardando draft ou dados estatísticos. Para testar sem o LoL, escolha Draft manual / simulador e carregue um cenário."; color:#99abc0; wrap:word-wrap; }
+                ScrollView {
+                    content-width:self.width;
+                    VerticalBox {
+                        spacing:10px;
+                        for row[i] in root.ranking: Card {
+                            min-height:190px;
+                            VerticalBox {
+                                padding:16px; spacing:6px;
+                                HorizontalBox {
+                                    Text { text:(i+1) + ".  " + row.name; color:#edf4fc; font-size:18px; font-weight:600; }
+                                    Text { text:row.score; color:row.insufficient ? #e1c477 : #64e1cb; horizontal-alignment:right; }
+                                }
+                                Text { text:row.tags; color:#e1c477; font-size:11px; wrap:word-wrap; }
+                                Text { text:row.reasons; color:#99abc0; font-size:12px; wrap:word-wrap; }
+                                Button { text:"Runas e feitiços"; clicked=>{root.select-candidate(row.id);root.page=3;} }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        Text { text:root.error; color:#f09b9b; wrap:word-wrap; min-height:18px; font-size:12px; }
+    }
+    if root.about-visible: Rectangle {
+        background: #0e1520;
+        VerticalBox {
+            padding: 32px; spacing: 20px;
+            Text { text: "Pikker · MIT · Copyright 2026 Muriel Gasparini"; color: #64e1cb; font-size: 20px; }
+            Text { text: root.legal-notice; color: #d3dce7; wrap: word-wrap; }
+            Text { text: "Estatísticas: OP.GG. Catálogo: Riot Data Dragon. Recomendações não garantem vitória ou ganho de rank. Licenças e avisos de terceiros acompanham o pacote."; color: #99abc0; wrap: word-wrap; }
+            AboutSlint { vertical-stretch: 0; }
+            Rectangle { background: transparent; vertical-stretch: 1; }
+            Button { text: "Fechar Sobre"; clicked => { root.close-about(); } }
+        }
+    }
+}

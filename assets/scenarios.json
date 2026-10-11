@@ -1,0 +1,6 @@
+[
+ {"allies":[],"enemies":[],"bans":[]},
+ {"allies":[{"champion":222,"hover":null,"role":"BOT"}],"enemies":[],"bans":[89]},
+ {"allies":[{"champion":222,"hover":null,"role":"BOT"}],"enemies":[{"champion":58,"hover":null,"role":"TOP"},{"champion":254,"hover":null,"role":"JUNGLE"},{"champion":134,"hover":null,"role":"MID"}],"bans":[89,40]},
+ {"allies":[{"champion":61,"hover":null,"role":"MID"}],"enemies":[{"champion":51,"hover":null,"role":"BOT"},{"champion":111,"hover":null,"role":"SUPPORT"},{"champion":516,"hover":null,"role":"TOP"},{"champion":32,"hover":null,"role":"JUNGLE"},{"champion":103,"hover":null,"role":"MID"}],"bans":[89]}
+]
