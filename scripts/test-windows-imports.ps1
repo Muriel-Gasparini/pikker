@@ -13,6 +13,34 @@ if ($reviewMessage -notmatch 'first-private\.dll' -or $reviewMessage -notmatch '
 }
 Assert-SystemImports @('KERNEL32.dll', 'combase.dll')
 Assert-SystemImports @('KERNEL32.dll', 'COMBASE.DLL')
+# Complete dumpbin dependency list observed in Windows CI run 38172961243.
+$windowsBuild = @'
+    kernel32.dll
+    dwrite.dll
+    user32.dll
+    dwmapi.dll
+    gdi32.dll
+    comctl32.dll
+    ntdll.dll
+    shlwapi.dll
+    oleaut32.dll
+    shell32.dll
+    combase.dll
+    api-ms-win-core-winrt-error-l1-1-0.dll
+    bcryptprimitives.dll
+    api-ms-win-core-synch-l1-2-0.dll
+    uxtheme.dll
+    KERNEL32.dll
+    USER32.dll
+    ADVAPI32.dll
+    bcrypt.dll
+    imm32.dll
+    ws2_32.dll
+    ole32.dll
+'@
+$windowsImports = @(Get-ImportedLibraries $windowsBuild)
+if ($windowsImports.Count -ne 22) { throw 'Actual Windows dependency fixture lost imports' }
+Assert-SystemImports $windowsImports
 foreach ($libraries in @(@('KERNEL32.dll','VCRUNTIME140.dll'), @('KERNEL32.dll','libunwind.dll'), @('unknown.dll'), @())) {
     $rejected = $false
     try { Assert-SystemImports $libraries } catch { $rejected = $true }

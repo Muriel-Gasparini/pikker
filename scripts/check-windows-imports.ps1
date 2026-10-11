@@ -11,7 +11,7 @@ function Assert-SystemImports([string[]]$Libraries) {
         'd3d11.dll','dbghelp.dll','dwmapi.dll','dwrite.dll','dxgi.dll','gdi32.dll','imm32.dll','iphlpapi.dll',
         'kernel32.dll','kernelbase.dll','msvcrt.dll','ntdll.dll','ole32.dll','oleaut32.dll',
         'opengl32.dll','propsys.dll','rpcrt4.dll','secur32.dll','setupapi.dll','shell32.dll',
-        'shlwapi.dll','ucrtbase.dll','user32.dll','userenv.dll','version.dll','winmm.dll','ws2_32.dll')
+        'shlwapi.dll','ucrtbase.dll','user32.dll','userenv.dll','uxtheme.dll','version.dll','winmm.dll','ws2_32.dll')
     $review = @(foreach ($library in $Libraries) {
         $name = $library.ToLowerInvariant()
         if ($name -notmatch '^api-ms-win-[a-z0-9-]+\.dll$' -and $name -notmatch '^ext-ms-win-[a-z0-9-]+\.dll$' -and $name -notin $system) {
