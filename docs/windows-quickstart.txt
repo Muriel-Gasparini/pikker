@@ -1,0 +1,34 @@
+PIKKER — Windows 10/11 x64
+
+1. Baixe o ZIP da release oficial e confira o SHA-256. Extraia TODO o ZIP.
+   Mantenha os arquivos e eventuais DLLs redistribuíveis do pacote juntos.
+2. Abra pikker.exe antes de entrar na fila. Não precisa instalar Rust, Python ou Node.
+3. Aguarde a preparação dos dados. Cache recente é reutilizado; sem internet,
+   dados anteriores ficam disponíveis com aviso de idade/cobertura.
+4. Com o cliente do LoL aberto, escolha Conexão automática. A rota e o draft
+   devem aparecer quando o cliente disponibilizar a seleção de campeões.
+5. Escolha elo, preferências e domínio fora do draft. O app também recomenda
+   campeões fora da sua pool. Runas e feitiços só aparecem se estiverem em cache.
+6. Durante o draft, recomendações são calculadas localmente. Não há consultas
+   de meta por pick/ban, aplicação de runas ou escolha automática de campeão.
+7. Ao terminar, feche a janela. Não há serviço instalado nem inicialização
+   automática. O encerramento de uma consulta em voo pode levar até 16 segundos.
+
+Se não conectar: confirme que o cliente está aberto. Um lockfile pode ser
+indicado por PIKKER_LCU_LOCKFILE antes de iniciar o programa. Erros TLS não
+ativam uma opção insegura. Para testar a interface sem LoL, use Draft manual /
+simulador; isso não comprova os eventos do cliente real.
+
+LIMITAÇÕES IMPORTANTES
+Build/smoke Windows no CI e testes com fixtures sintéticas não comprovam os
+eventos de seleção real. Ainda NÃO foi validado contra LoL real no Windows.
+Compatibilidade do contrato atual não é garantida.
+Elo solicitado não significa população comprovada; patch/região desconhecidos
+continuam desconhecidos. O escore não é chance pessoal de vitória e não há
+promessa de subir de rank. Medições Linux não comprovam FPS/recursos Windows.
+
+Executável não assinado. Se o Windows alertar, confira o checksum e a origem;
+não desative proteções do sistema nem execute como administrador por rotina.
+Código original MIT; avisos/licenças de terceiros acompanham o pacote.
+Pikker não é endossado pela Riot; registro/auditoria e condições dos fornecedores
+precisam ser resolvidos antes da distribuição pública de binários.
