@@ -4,6 +4,8 @@ $sample = "Image has the following dependencies:`n    KERNEL32.dll`n    USER32.d
 $imports = @(Get-ImportedLibraries $sample)
 if ($imports.Count -ne 4) { throw 'Dumpbin dependency parser lost libraries' }
 Assert-SystemImports $imports
+Assert-SystemImports @('KERNEL32.dll', 'comctl32.dll')
+Assert-SystemImports @('KERNEL32.dll', 'COMCTL32.DLL')
 foreach ($libraries in @(@('KERNEL32.dll','VCRUNTIME140.dll'), @('KERNEL32.dll','libunwind.dll'), @('unknown.dll'), @())) {
     $rejected = $false
     try { Assert-SystemImports $libraries } catch { $rejected = $true }
